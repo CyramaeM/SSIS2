@@ -9,8 +9,9 @@
 <body>
     <nav class="navbar">
         <ul>
-            <li><a href="{{ url_for('signup') }}">Sign Up</a></li>
-            <li><a href="{{ url_for('login') }}">Log In</a></li>
+            <li><a href="{{ url_for('controller.signup') }}">Sign Up</a></li>
+            <li><a href="{{ url_for('controller.login') }}">Log In</a></li>
+
         </ul>
             <div class="content">
                 {% with messages = get_flashed_messages(with_categories=true) %}

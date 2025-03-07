@@ -1,18 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}Log IN{% endblock %}
+{% block title %}Sign Up{% endblock %}
 
 {% block content %}
 <div class="form-container">
-    <h1>Log In</h1>
+    <h1>Sign Up</h1>
     <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" required>
         <br>
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required>
         <br>
-        <input type="submit" value="Log In">
+        <input type="submit" value="Sign Up">
     </form>
 </div>
 {% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Students List{% endblock %}
+
+{% block content %}
+<h2>Student Information</h2>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>ID Number</th>
+            <th>Course</th>
+            <th>Year Level</th>
+            <th>College</th>
+            <th>Gender</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for student in students %}
+        <tr>
+            <td>{{ student[0] }}</td>
+            <td>{{ student[1] }}</td>
+            <td>{{ student[2] }}</td>
+            <td>{{ student[3] }}</td>
+            <td>{{ student[4] }}</td>
+            <td>{{ student[5] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
