@@ -1,3 +1,4 @@
+from tkinter import NO
 from flask import Blueprint, render_template, request, session, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mysqldb import MySQL
@@ -128,31 +129,31 @@ def add_student():
         return render_template('add_student.html', courses=courses)  # Ensure courses is passed
 
     # Handle POST request (form submission)
-    id_number = request.form.get('id_number')
+    stud_id = request.form.get('stud_id')
     fname = request.form.get('fname')
     lname = request.form.get('lname')
     course = request.form.get('course')
-    year_level = request.form.get('year_level')
-    college = request.form.get('college')
+    yearlevel = request.form.get('yearlevel')
     gender = request.form.get('gender')
-
     # Handle file upload
     profile_photo = request.files['profile_photo']
+    
     upload_result = None
     if profile_photo:
         upload_result = cloudinary.uploader.upload(profile_photo)
 
     # Get the secure URL of the uploaded photo
     photo_url = upload_result['secure_url'] if upload_result else 'default_profile.png'
+    photo_public_id = upload_result['public_id'] if upload_result else None
 
-    if not id_number or not course or not year_level or not college or not gender:
+    if not stud_id or not course or not yearlevel or not gender:
         flash("Please fill in all fields", "danger")
         return redirect(url_for("controller.add_student"))
 
     try:
         with mysql.connection.cursor() as cur:
-            cur.execute("INSERT INTO students (id_number, fname, lname, course, year_level, college, gender, profile) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", 
-                        (id_number, fname, lname, course, year_level, college, gender, photo_url))
+            cur.execute("INSERT INTO students (id_number, fname, lname, course, yearlevel, gender, profile,profile_id) VALUES (%s, %s, %s, %s, %s, %s, %s,%s)", 
+                        (stud_id, fname, lname, course, yearlevel, gender, photo_url,photo_public_id))
             mysql.connection.commit()
             flash("Student added successfully!", "success")
             return redirect(url_for("controller.home"))
@@ -164,75 +165,42 @@ def add_student():
 
 @controller.route('/editstudent/<string:student_id>', methods=['GET', 'POST'])
 def edit_student(student_id):
-    try:
-        cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)  
-        cur.execute("SELECT coursecode FROM course")  
-        courses = [row['coursecode'] for row in cur.fetchall()]  # Fetch course codes correctly
-        cur.close()
-    except Exception as e:
-        print("Database Error:", e)
-        courses = []  # Ensure courses is at least an empty list to avoid NameError
-
-    if request.method == 'GET':
-        return render_template('add_student.html', courses=courses)  # Ensure courses is passed
-    try:
-        with mysql.connection.cursor() as cur:
-            cur.execute("SELECT id_number, fname, lname, course, yearlevel, course, gender FROM students WHERE id_number = %s", (student_id,))
-            student = cur.fetchone()
-
-        if not student:
-            flash("Student not found.", "danger")
-            return redirect(url_for("controller.home"))
-
-        if request.method == 'POST':
-            id_number = request.form.get('id_number')
-            fname = request.form.get('fname')
-            lname = request.form.get('lname')
-            course = request.form.get('course')
-            yearlevel = request.form.get('yearlevel')
-            course = request.form.get('course')
-            gender = request.form.get('gender')
-
-            if not id_number or not fname or not lname or not course or not yearlevel or not course or not gender:
-                flash("Please fill in all fields", "danger")
-                return redirect(url_for("controller.edit_student", student_id=student_id))
-
-            with mysql.connection.cursor() as cur:
-                cur.execute("""
-                    UPDATE students 
-                    SET id_number=%s, fname=%s, lname=%s, course=%s, yearlevel=%s, course=%s, gender=%s 
-                    WHERE id_number=%s
-                """, (id_number, fname, lname, course, yearlevel, course, gender, student_id))
-                mysql.connection.commit()
-                flash("Student updated successfully!", "success")
-                return redirect(url_for("controller.home"))
-
-        return render_template('edit_student.html', student=student)
-    
-    except Exception as e:
-        print("Database Error:", e)
-        flash("An error occurred. Please try again.", "danger")
-        return redirect(url_for("controller.home"))
-
-
-    except Exception as e:
-        print("Database Error:", e)
-        flash("An error occurred. Please try again.", "danger")
+    with mysql.connection.cursor() as cur:
+        cur.execute("""
+            UPDATE students 
+            SET id_number=%s, fname=%s, lname=%s, course=%s, yearlevel=%s, course=%s, gender=%s 
+            WHERE id_number=%s
+        """, (id_number, fname, lname, course, yearlevel, course, gender, student_id))
+        mysql.connection.commit()
+        flash("Student updated successfully!", "success")
         return redirect(url_for("controller.home"))
 
     return render_template('edit_student.html', student=student)
 
+
 @controller.route('/delete_student/<string:student_id>', methods=['POST'])
 def delete_student(student_id):
     try:
-        cur = mysql.connection.cursor()
+        cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        # Fetch the public ID of the photo to delete
+        cur.execute("SELECT profile_id FROM students WHERE id_number = %s", (student_id,))
+        student = cur.fetchone()
+        profile_public_id = student.get('profile_id') if student else None
+
+        # Delete the student from the database
         cur.execute("DELETE FROM students WHERE id_number = %s", (student_id,))
         mysql.connection.commit()
         cur.close()
+
+        # Delete the photo from Cloudinary
+        if profile_public_id:
+            cloudinary.uploader.destroy(profile_public_id)
+
         flash("Student deleted successfully!", "success")
     except Exception as e:
         print("Database Error:", e)
         flash("An error occurred. Please try again.", "danger")
     
     return redirect(url_for("controller.home"))
+
 

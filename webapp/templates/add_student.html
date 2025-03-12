@@ -1,7 +1,4 @@
-{% extends "index.html" %}
-{% block content %}
 <div class="container">
-
     <!-- Registration Form -->
     <form id="registrationForm" action="/addstudent" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -11,21 +8,18 @@
             <input type="text" name="stud_id" id="stud_id" placeholder="Enter your ID number" class="form-control" required>
             <span id="idError" class="error"></span>
         </div>
-
         <!-- First Name -->
         <div class="form-group">
-            <label for ="fname">First Name:</label>
+            <label for="fname">First Name:</label>
             <input type="text" name="fname" id="fname" placeholder="Enter your First Name" class="form-control" required>
             <span id="fnameError" class="error"></span>
         </div>
-
         <!-- Last Name -->
         <div class="form-group">
             <label for="lname">Last Name:</label>
             <input type="text" name="lname" id="lname" placeholder="Enter your Last Name" class="form-control" required>
             <span id="lnameError" class="error"></span>
         </div>
-
         <!-- Course Selection -->
         <div class="form-group">
             <label for="course">Course:</label>
@@ -37,7 +31,6 @@
             </select>
             <span id="courseError" class="error"></span>
         </div>
-
         <!-- Year Level Selection -->
         <div class="form-group">
             <label for="yearlevel">Year Level:</label>
@@ -47,11 +40,9 @@
                 <option value="2">2</option>
                 <option value="3">3</option>
                 <option value="4">4</option>
-                <!-- Add more options as needed -->
             </select>
             <span id="yearlevelError" class="error"></span>
         </div>
-
         <!-- Gender Selection -->
         <div class="form-group">
             <label>Gender:</label>
@@ -65,16 +56,12 @@
             </div>
             <span id="genderError" class="error"></span>
         </div>
-
         <!-- Profile Photo Upload -->
         <div class="form-group">
             <label for="profile_photo">Profile Photo:</label>
             <input type="file" name="profile_photo" id="profile_photo" class="form-control">
         </div>
-
         <!-- Submit Button -->
         <button type="submit" class="btn btn-warning" onclick="return validateForm();">Submit</button>
     </form>
 </div>
-
-{% endblock %}

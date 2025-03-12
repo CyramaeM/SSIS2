@@ -10,24 +10,24 @@
 <table border="1">
     <thead>
         <tr>
+            <th>Profile</th>
             <th>ID</th>
             <th>First Name</th>
             <th>Last Name</th>
             <th>Course</th>
             <th>Year Level</th>
-            <th>Profile</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
         {% for student in students %}
         <tr>
+            <td><img src="{{ student.profile }}" style="width:100px;height:100px; "> </td>
             <td>{{ student.id_number }}</td>
             <td>{{ student.fname }}</td>
             <td>{{ student.lname }}</td>
             <td>{{ student.course }}</td>
             <td>{{ student.yearlevel }}</td>
-            <td>{{ student.profile }}</td>
             <td>
                 <a href="{{ url_for('controller.edit_student', student_id=student.id_number) }}" class="btn btn-success">Edit</a>
                 <form action="{{ url_for('controller.delete_student', student_id=student.id_number) }}" method="POST" style="display:inline-block;">
