@@ -5,26 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}My Flask App{% endblock %}</title>
     <link rel="stylesheet" href='/static/styles.css'>
+    <link rel="stylesheet" href='/static/form.css'>
 </head>
 <body>
     <nav class="navbar">
         <ul>
-            <li><a href="{{ url_for('controller.signup') }}">Sign Up</a></li>
-            <li><a href="{{ url_for('controller.login') }}">Log In</a></li>
-
+            {% if 'user_id' in session %}
+                <li><a href="{{ url_for('controller.logout') }}">Log Out</a></li>
+            {% else %}
+                <li><a href="{{ url_for('controller.signup') }}">Sign Up</a></li>
+                <li><a href="{{ url_for('controller.login') }}">Log In</a></li>
+            {% endif %}
         </ul>
-            <div class="content">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        <ul class="flashes">
-                        {% for category, message in messages %}
-                            <li class="{{ category }}">{{ message }}</li>
-                        {% endfor %}
-                        </ul>
-                    {% endif %}
-                {% endwith %}
-
     </nav>
+    
+    <div class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+    </div>
+    
     <div class="content">
         {% block content %}{% endblock %}
     </div>

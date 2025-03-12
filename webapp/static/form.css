@@ -1,41 +1,77 @@
-
-/* form */
-
-html, body {
-    height: 100%;
-    margin: 0;
-    display: flex;
+@charset "utf-8";
+/* Centering the content */
+.content {
     justify-content: center;
     align-items: center;
-}
-
-.content {
-    width: 100%;
-    max-width: 400px;
-    background: #fff;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    border-radius: 8px;
-}
-
-form {
-    display: flex;
     flex-direction: column;
+    flex: 1;
+    padding-top: 60px; /* Add top padding to make room for the fixed navbar */
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-form label {
-    margin-top: 10px;
-}
-
-form input[type="submit"] {
+h2 {
+    color: #066BA3;
     margin-top: 20px;
-    padding: 10px;
-    background-color: #333;
-    color: white;
-    border: none;
-    cursor: pointer;
+    text-align: center;
 }
 
-form input[type="submit"]:hover {
-    background-color: #575757;
+/* Centering the table and making it more readable */
+table {
+    margin: 20px auto;
+    border-collapse: collapse;
+    width: 90%;
+    max-width: 800px;
+    background: #fff;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+thead {
+    background-color: #066BA3;
+    color: white;
+}
+
+td, th {
+    padding: 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+    font-size: 16px;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+    table {
+        width: 100%;
+    }
+    th, td {
+        padding: 10px;
+        font-size: 14px;
+    }
+}
+
+/* Flash messages styling */
+.flashes {
+    list-style-type: none;
+    padding: 0;
+}
+
+.flashes li {
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.flashes li.success {
+    background-color: #d4edda;
+    color: #155724;
 }

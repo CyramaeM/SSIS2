@@ -2,6 +2,11 @@ from flask import Flask
 from flask_mysqldb import MySQL
 #from config import DB_USERNAME, DB_PASSWORD, DB_NAME, DB_HOST, SECRET_KEY
 from flask_wtf.csrf import CSRFProtect
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+
 
 mysql = MySQL()
 
@@ -17,6 +22,11 @@ def create_app():
     app.config["MYSQL_PORT"] = 3306
     app.config["MYSQL_CURSORCLASS"] = "DictCursor"
 
+    cloudinary.config(
+        cloud_name = 'dbth29nsw',
+        api_key = '875432953529479',
+        api_secret = 'Pd9SnwsUh40BXu67DaOh6LcxI4s'
+        )
     mysql.init_app(app)
 
     with app.app_context():

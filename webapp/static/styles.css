@@ -1,63 +1,16 @@
-body {
-    font-family: Arial, sans-serif;
-}
+@charset "utf-8";
+/* CSS Document */
 
-.navbar {
-    background-color: #333;
-    overflow: hidden;
-}
-
-.navbar ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-}
-
-.navbar ul li {
-    float: left;
-}
-
-.navbar ul li a {
-    display: block;
-    color: white;
-    text-align: center;
-    padding: 14px 20px;
-    text-decoration: none;
-}
-
-.navbar ul li a:hover {
-    background-color: #575757;
-}
-
-.content {
-    padding: 20px;
-}
-
-.flashes {
-    list-style-type: none;
-    padding: 0;
-}
-
-.flashes li {
-    padding: 10px;
-    margin-bottom: 10px;
-}
-
-.flashes li.success {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-
-/* form */
-
-/* Add these styles to your existing styles.css */
-
+/* Ensure the body and html take the full height of the viewport */
 html, body {
     height: 100%;
     margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    flex-direction: column;
 }
 
+/* Navbar styling */
 .navbar {
     background-color: #333;
     overflow: hidden;
@@ -65,12 +18,15 @@ html, body {
     width: 100%;
     top: 0;
     z-index: 1000;
+    justify-content: space-between;
+    padding: 14px 20px;
 }
 
 .navbar ul {
     list-style-type: none;
     margin: 0;
     padding: 0;
+    flex: 1;
 }
 
 .navbar ul li {
@@ -86,43 +42,5 @@ html, body {
 }
 
 .navbar ul li a:hover {
-    background-color: #575757;
-}
-
-.content {
-    padding: 20px 20px 20px 20px; /* Add top padding to make room for the fixed navbar */
-}
-
-.form-container {
-    width: 100%;
-    max-width: 400px;
-    background: #fff;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    margin: 0 auto;
-    margin-top: 250px;
-
-
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-}
-form label {
-    margin-top: 10px;
-}
-
-form input[type="submit"] {
-    margin-top: 20px;
-    padding: 10px;
-    background-color: #333;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-form input[type="submit"]:hover {
     background-color: #575757;
 }
