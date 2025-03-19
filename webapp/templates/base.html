@@ -6,12 +6,17 @@
     <title>{% block title %}My Flask App{% endblock %}</title>
     <link rel="stylesheet" href='/static/styles.css'>
     <link rel="stylesheet" href='/static/form.css'>
+    <link rel="stylesheet" href='/static/base.css'>
+    <link rel="stylesheet" href='/static/add.css'>
 </head>
 <body>
     <nav class="navbar">
         <ul>
             {% if 'user_id' in session %}
                 <li><a href="{{ url_for('controller.logout') }}">Log Out</a></li>
+                <li><a href="{{ url_for('controller.home') }}">Student</a></li>
+                <li><a href="{{ url_for('controller.collegehome') }}">College</a></li>
+                <li><a href="{{ url_for('controller.coursehome') }}">Course</a></li>
             {% else %}
                 <li><a href="{{ url_for('controller.signup') }}">Sign Up</a></li>
                 <li><a href="{{ url_for('controller.login') }}">Log In</a></li>

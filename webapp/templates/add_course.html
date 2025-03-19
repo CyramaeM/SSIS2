@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Course Information{% endblock %}
+
+{% block content %}
+<h2>Course Information</h2>
+<div class="modal-body">
+    <div class="form-container">
+        <form id="addCollegeForm" action="{{ url_for('controller.add_course') }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <!-- Course Code -->
+            <div class="form-group">
+                <label for="coursecode">Course Code:</label>
+                <input type="text" name="coursecode" id="coursecode" placeholder="Enter Course Code" class="form-control" required>
+                <span id="coursecodeError" class="error"></span>
+            </div>
+            <!-- Course Name -->
+            <div class="form-group">
+                <label for="coursename">Course Name:</label>
+                <input type="text" name="coursename" id="coursename" placeholder="Enter Course Name" class="form-control" required>
+                <span id="coursenameError" class="error"></span>
+            </div>
+            <div class="form-group">
+                <label for="college">College:</label>
+                <select name="college" id="college" class="form-control" required>
+                    <option value="">Select College</option>
+                    {% for college in colleges %}
+                    <option value="{{ college.collegecode }}">{{ college.collegename }}</option>
+                    {% endfor %}
+                </select>
+                <span id="collegeError" class="error"></span>
+            </div>
+              
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-warning" onclick="return validateForm();">Submit</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

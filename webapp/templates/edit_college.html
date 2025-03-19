@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}College List{% endblock %}
+
+{% block content %}
+<h2>College Information</h2>
+<div class="modal-body">
+    <div class="form-container">
+        <form id="addCollegeForm" action="{{ url_for('controller.add_college') }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <!-- College Code -->
+            <div class="form-group">
+                <label for="collegecode">College Code:</label>
+                <input type="text" name="collegecode" id="collegecode" placeholder="Enter College Code" class="form-control" required>
+                <span id="collegecodeError" class="error"></span>
+            </div>
+            <!-- College Name -->
+            <div class="form-group">
+                <label for="collegename">College Name:</label>
+                <input type="text" name="collegename" id="collegename" placeholder="Enter College Name" class="form-control" required>
+                <span id="collegenameError" class="error"></span>
+            </div>
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-warning" onclick="return validateForm();">Submit</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

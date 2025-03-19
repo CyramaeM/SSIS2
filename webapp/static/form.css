@@ -1,77 +1,51 @@
 @charset "utf-8";
 /* Centering the content */
-.content {
+.form-container {
+    display:flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
-    flex: 1;
-    padding-top: 60px; /* Add top padding to make room for the fixed navbar */
+    min-height: 15vh;
+    padding-top: 100px; /* Add top padding to make room for the fixed navbar */
     width: 100%;
-    max-width: 1200px;
+    max-width: 300px;
     margin: 0 auto;
+    background: #f9f9f9;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    padding: 5px;
 }
 
-h2 {
+h1 {
     color: #066BA3;
-    margin-top: 20px;
     text-align: center;
 }
 
-/* Centering the table and making it more readable */
-table {
-    margin: 20px auto;
-    border-collapse: collapse;
-    width: 90%;
-    max-width: 800px;
-    background: #fff;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
+label {
+    display: block;
+    margin: 5px 0 5px;
+    color: #333;
 }
 
-thead {
+input[type="email"], input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    margin-top: 20px auto;
+}
+
+input[type="submit"] {
     background-color: #066BA3;
     color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
 }
 
-td, th {
-    padding: 15px;
-    border: 1px solid #ddd;
-    text-align: center;
-    font-size: 16px;
-}
-
-tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-tr:hover {
-    background-color: #f1f1f1;
-}
-
-/* Responsive table */
-@media (max-width: 768px) {
-    table {
-        width: 100%;
-    }
-    th, td {
-        padding: 10px;
-        font-size: 14px;
-    }
-}
-
-/* Flash messages styling */
-.flashes {
-    list-style-type: none;
-    padding: 0;
-}
-
-.flashes li {
-    padding: 10px;
-    margin-bottom: 10px;
-}
-
-.flashes li.success {
-    background-color: #d4edda;
-    color: #155724;
+input[type="submit"]:hover {
+    background-color: #055a92;
 }

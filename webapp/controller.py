@@ -99,20 +99,32 @@ def logout():
 
 
 
+from flask import request
+
 @controller.route('/home')
 def home():
-    # ✅ Ensure the user is logged in
     if 'user_id' not in session:
         flash("You must log in first!", "danger")
-        return redirect(url_for('controller.login'))  # Redirect to login page
+        return redirect(url_for('controller.login'))
 
-    # ✅ Fetch students' data from the database as dictionaries
-    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)  # ✅ Use DictCursor
-    cur.execute("SELECT * FROM students")
+    # ✅ Get the current page number from the request (default to 1)
+    page = request.args.get('page', 1, type=int)
+    per_page = 10  # Number of students per page
+    offset = (page - 1) * per_page
+
+    # ✅ Fetch students with pagination
+    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cur.execute("SELECT * FROM students LIMIT %s OFFSET %s", (per_page, offset))
     students = cur.fetchall()
-    
+
+    # ✅ Count total students
+    cur.execute("SELECT COUNT(*) AS total FROM students")
+    total_students = cur.fetchone()['total']
+    total_pages = (total_students + per_page - 1) // per_page  # Calculate total pages
     cur.close()
-    return render_template('home.html', students=students)
+
+    return render_template('home.html', students=students, page=page, total_pages=total_pages)
+
 
 @controller.route('/addstudent', methods=['GET', 'POST'])
 def add_student():
@@ -166,16 +178,29 @@ def add_student():
 @controller.route('/editstudent/<string:student_id>', methods=['GET', 'POST'])
 def edit_student(student_id):
     with mysql.connection.cursor() as cur:
-        cur.execute("""
-            UPDATE students 
-            SET id_number=%s, fname=%s, lname=%s, course=%s, yearlevel=%s, course=%s, gender=%s 
-            WHERE id_number=%s
-        """, (id_number, fname, lname, course, yearlevel, course, gender, student_id))
-        mysql.connection.commit()
-        flash("Student updated successfully!", "success")
-        return redirect(url_for("controller.home"))
+        if request.method == 'POST':
+            id_number = request.form['id_number']
+            fname = request.form['fname']
+            lname = request.form['lname']
+            course = request.form['course']
+            yearlevel = request.form['yearlevel']
+            gender = request.form['gender']
+            
+            cur.execute("""
+                UPDATE students 
+                SET id_number=%s, fname=%s, lname=%s, course=%s, yearlevel=%s, gender=%s 
+                WHERE id_number=%s
+            """, (id_number, fname, lname, course, yearlevel, gender, student_id))
+            
+            mysql.connection.commit()
+            flash("Student updated successfully!", "success")
+            return redirect(url_for("controller.home"))
 
-    return render_template('edit_student.html', student=student)
+        else:
+            cur.execute("SELECT * FROM students WHERE id_number = %s", (student_id,))
+            student = cur.fetchone()
+
+            return render_template('edit_student.html', student=student)
 
 
 @controller.route('/delete_student/<string:student_id>', methods=['POST'])
@@ -203,4 +228,177 @@ def delete_student(student_id):
     
     return redirect(url_for("controller.home"))
 
+@controller.route('/collegeh')
+def collegehome():
+    if 'user_id' not in session:
+        flash("You must log in first!", "danger")
+        return redirect(url_for('controller.login'))
+    
+    # Fetch all colleges
+    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cur.execute("SELECT collegecode, collegename FROM college")
+    colleges = cur.fetchall()
 
+    return render_template('college.html', colleges=colleges)
+
+@controller.route('/addcollege', methods=['GET', 'POST'])
+def add_college():
+    if 'user_id' not in session:
+        flash("You must log in first!", "danger")
+        return redirect(url_for('controller.login'))
+
+    if request.method == 'POST':
+        collegecode = request.form['collegecode']
+        collegename = request.form['collegename']
+        
+        cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cur.execute("INSERT INTO college (collegecode, collegename) VALUES (%s, %s)", (collegecode, collegename))
+        mysql.connection.commit()
+        flash("College added successfully!", "success")
+        return redirect(url_for('controller.collegehome'))
+    
+    return render_template('add_college.html')
+
+
+
+@controller.route('/editcollege/<string:college_id>', methods=['GET', 'POST'])
+def edit_college(college_id):
+    if 'user_id' not in session:
+        flash("You must log in first!", "danger")
+        return redirect(url_for('controller.login'))
+
+    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    
+    if request.method == 'POST':
+        name = request.form['collegename']
+
+        cur.execute("""
+            UPDATE college 
+            SET collegename=%s 
+            WHERE collegecode=%s
+        """, (name, college_id))
+        
+        mysql.connection.commit()
+        flash("College updated successfully!", "success")
+        return redirect(url_for('controller.collegehome'))
+
+    else:
+        cur.execute("SELECT * FROM college WHERE collegecode = %s", (college_id,))
+        college = cur.fetchone()
+        return render_template('edit_college.html', college=college)
+
+
+@controller.route('/deletecollege/<string:college_id>', methods=['POST'])
+def delete_college(college_id):
+    if 'user_id' not in session:
+        flash("You must log in first!", "danger")
+        return redirect(url_for('controller.login'))
+
+    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cur.execute("DELETE FROM college WHERE collegecode = %s", (college_id,))
+    mysql.connection.commit()
+    flash("College deleted successfully!", "success")
+    return redirect(url_for('controller.collegehome'))
+
+@controller.route('/coursehome')
+def coursehome():
+    if 'user_id' not in session:
+        flash("You must log in first!", "danger")
+        return redirect(url_for('controller.login'))
+    
+    # Fetch all courses and colleges
+    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cur.execute("""
+        SELECT 
+            course.coursecode, 
+            course.coursename, 
+            course.collegebelong, 
+            college.collegecode, 
+            college.collegename 
+        FROM 
+            course 
+        JOIN 
+            college 
+        ON 
+            course.collegebelong = college.collegecode
+    """)
+    courses = cur.fetchall()
+    
+    return render_template('course.html', courses=courses)
+
+
+@controller.route('/addcourse', methods=['GET', 'POST'])
+def add_course():
+    with mysql.connection.cursor() as cur:
+        if request.method == 'POST':
+            course_code = request.form['coursecode']
+            course_name = request.form['coursename']
+            college_belong = request.form['college']  # The selected college
+            
+            # Save to the database
+            cur.execute("""
+                INSERT INTO course (coursecode, coursename, collegebelong)
+                VALUES (%s, %s, %s)
+            """, (course_code, course_name, college_belong))
+            mysql.connection.commit()
+            flash("Course added successfully!", "success")
+            return redirect(url_for('controller.coursehome'))
+
+        else:
+            # Fetch colleges from the database
+            cur.execute("SELECT collegecode, collegename FROM college")
+            colleges = cur.fetchall()  # List of colleges
+            return render_template('add_course.html', colleges=colleges)
+
+
+
+@controller.route('/editcourse/<string:course_id>', methods=['GET', 'POST'])
+def edit_course(course_id):
+    try:
+        with mysql.connection.cursor() as cur:
+            if request.method == 'POST':
+                course_code = request.form.get('course_code')
+                course_name = request.form.get('course_name')
+
+                # Validate inputs
+                if not course_code or not course_name:
+                    flash("Course Code and Name are required!", "danger")
+                    cur.execute("SELECT * FROM course WHERE coursecode = %s", (course_id,))
+                    course = cur.fetchone()
+                    return render_template('edit_course.html', course=course)
+
+                # Update course info
+                cur.execute("""
+                    UPDATE course
+                    SET coursecode = %s, coursename = %s
+                    WHERE coursecode = %s
+                """, (course_code, course_name, course_id))
+                mysql.connection.commit()
+                flash("Course updated successfully!", "success")
+                return redirect(url_for('controller.coursehome'))
+
+            # Fetch course for GET request
+            cur.execute("SELECT * FROM course WHERE coursecode = %s", (course_id,))
+            course = cur.fetchone()
+
+            if not course:
+                flash("Course not found!", "danger")
+                return redirect(url_for('controller.coursehome'))
+
+            return render_template('edit_course.html', course=course)
+
+    except Exception as e:
+        flash(f"An error occurred: {e}", "danger")
+        return redirect(url_for('controller.coursehome'))
+    
+@controller.route('/deletecourse/<string:coursecode>', methods=['POST'])
+def delete_course(coursecode):
+    if 'user_id' not in session:
+        flash("You must log in first!", "danger")
+        return redirect(url_for('controller.login'))
+    
+    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cur.execute("DELETE FROM course WHERE coursecode = %s", (coursecode,))
+    mysql.connection.commit()
+    flash("Course deleted successfully!", "success")
+    return redirect(url_for('controller.coursehome'))
