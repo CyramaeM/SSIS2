@@ -45,6 +45,6 @@ def create_app():
     CSRFProtect(app)
 
     from webapp.controller import controller
-    app.register_blueprint(controller)
+    app.register_blueprint(controller,url_prefix='/')
 
     return app

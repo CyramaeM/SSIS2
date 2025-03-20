@@ -20,7 +20,7 @@
             <td>{{ college.collegecode }}</td>
             <td>{{ college.collegename }}</td>
             <td>
-                <a href="{{ url_for('controller.edit_college', college_id=college.collegecode) }}" class="btn btn-success">Edit</a>
+                <a href="{{ url_for('controller.edit_college', collegecode=college.collegecode) }}" class="btn btn-success">Edit</a>
                 <form action="{{ url_for('controller.delete_college', college_id=college.collegecode) }}" method="POST" style="display:inline-block;">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-danger">Delete</button>

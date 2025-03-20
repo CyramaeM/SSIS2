@@ -1,22 +1,28 @@
 {% extends "base.html" %}
 
-{% block title %}Course Information{% endblock %}
+{% block title %}Edit Course{% endblock %}
 
 {% block content %}
-<h2>Course Information</h2>
-<div class="modal-body">
-    <div class="form-container">
-        <form method="POST" action="{{ url_for('controller.edit_course', course_id=course.coursecode) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            
+<div class="form-container">
+    <h1>Edit Course</h1>
+    <form id="editCourseForm" action="{{ url_for('controller.edit_course', coursecode=course.coursecode) }}" method="POST">
+
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <!-- Course Code -->
+        <div class="form-group">
             <label for="course_code">Course Code:</label>
-            <input type="text" id="course_code" name="course_code" value="{{ course.coursecode }}" required>
-            
+            <input type="text" name="course_code" id="course_code" value="{{ course.coursecode }}" class="form-control" required>
+        </div>
+        
+        <!-- Course Name -->
+        <div class="form-group">
             <label for="course_name">Course Name:</label>
-            <input type="text" id="course_name" name="course_name" value="{{ course.coursename }}" required>
-            
-            <button type="submit">Update Course</button>
-        </form>
-    </div>
+            <input type="text" name="course_name" id="course_name" value="{{ course.coursename }}" class="form-control" required>
+        </div>
+        
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
 </div>
 {% endblock %}

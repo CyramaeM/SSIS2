@@ -261,31 +261,36 @@ def add_college():
 
 
 
-@controller.route('/editcollege/<string:college_id>', methods=['GET', 'POST'])
-def edit_college(college_id):
-    if 'user_id' not in session:
-        flash("You must log in first!", "danger")
-        return redirect(url_for('controller.login'))
+@controller.route('/editcollege/<string:collegecode>', methods=['GET', 'POST'])
+def edit_college(collegecode):
+    with mysql.connection.cursor() as cur:
+        if request.method == 'POST':
+            # Get form data for college
+            college_code = request.form.get('college_code')
+            college_name = request.form.get('college_name')
 
-    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    
-    if request.method == 'POST':
-        name = request.form['collegename']
+            # Update the college information in the database
+            cur.execute("""
+                UPDATE college
+                SET collegecode = %s, collegename = %s
+                WHERE collegecode = %s
+            """, (college_code, college_name, collegecode))  # Corrected parameter list
 
-        cur.execute("""
-            UPDATE college 
-            SET collegename=%s 
-            WHERE collegecode=%s
-        """, (name, college_id))
+            mysql.connection.commit()
+            flash("College updated successfully!", "success")
+            return redirect(url_for('controller.collegehome'))  # Redirect to a college-specific page
         
-        mysql.connection.commit()
-        flash("College updated successfully!", "success")
-        return redirect(url_for('controller.collegehome'))
+        else:
+            # Fetch college details for the GET request
+            cur.execute("SELECT * FROM college WHERE collegecode = %s", (collegecode,))
+            college = cur.fetchone()  # Retrieve the college data
 
-    else:
-        cur.execute("SELECT * FROM college WHERE collegecode = %s", (college_id,))
-        college = cur.fetchone()
-        return render_template('edit_college.html', college=college)
+            if not college:
+                flash("College not found!", "danger")
+                return redirect(url_for('controller.collegehome'))  # Redirect to home if not found
+
+            return render_template('edit_college.html', college=college)  # Render the edit template
+
 
 
 @controller.route('/deletecollege/<string:college_id>', methods=['POST'])
@@ -352,44 +357,33 @@ def add_course():
 
 
 
-@controller.route('/editcourse/<string:course_id>', methods=['GET', 'POST'])
-def edit_course(course_id):
-    try:
-        with mysql.connection.cursor() as cur:
-            if request.method == 'POST':
-                course_code = request.form.get('course_code')
-                course_name = request.form.get('course_name')
+@controller.route('/editcourse/<string:coursecode>', methods=['GET', 'POST'])
+def edit_course(coursecode):
+    with mysql.connection.cursor() as cur:
+        if request.method == 'POST':
+            course_code = request.form.get('course_code')
+            course_name = request.form.get('course_name')
 
-                # Validate inputs
-                if not course_code or not course_name:
-                    flash("Course Code and Name are required!", "danger")
-                    cur.execute("SELECT * FROM course WHERE coursecode = %s", (course_id,))
-                    course = cur.fetchone()
-                    return render_template('edit_course.html', course=course)
+            cur.execute("""
+                UPDATE course
+                SET coursecode = %s, coursename = %s
+                WHERE coursecode = %s
+            """, (course_code, course_name, coursecode))  # Corrected parameter list
 
-                # Update course info
-                cur.execute("""
-                    UPDATE course
-                    SET coursecode = %s, coursename = %s
-                    WHERE coursecode = %s
-                """, (course_code, course_name, course_id))
-                mysql.connection.commit()
-                flash("Course updated successfully!", "success")
-                return redirect(url_for('controller.coursehome'))
-
-            # Fetch course for GET request
-            cur.execute("SELECT * FROM course WHERE coursecode = %s", (course_id,))
-            course = cur.fetchone()
+            mysql.connection.commit()
+            flash("Course updated successfully!", "success")
+            return redirect(url_for('controller.coursehome'))
+        
+        else:
+            cur.execute("SELECT * FROM course WHERE coursecode = %s", (coursecode,))
+            course = cur.fetchone()  # Fixed variable name
 
             if not course:
                 flash("Course not found!", "danger")
                 return redirect(url_for('controller.coursehome'))
 
-            return render_template('edit_course.html', course=course)
+            return render_template('edit_course.html', course=course)  # Pass course to template
 
-    except Exception as e:
-        flash(f"An error occurred: {e}", "danger")
-        return redirect(url_for('controller.coursehome'))
     
 @controller.route('/deletecourse/<string:coursecode>', methods=['POST'])
 def delete_course(coursecode):
