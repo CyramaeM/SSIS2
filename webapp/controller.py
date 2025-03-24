@@ -107,23 +107,36 @@ def home():
         flash("You must log in first!", "danger")
         return redirect(url_for('controller.login'))
 
-    # ✅ Get the current page number from the request (default to 1)
+    # Get current page
     page = request.args.get('page', 1, type=int)
-    per_page = 10  # Number of students per page
+    per_page = 10
     offset = (page - 1) * per_page
 
-    # ✅ Fetch students with pagination
-    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cur.execute("SELECT * FROM students LIMIT %s OFFSET %s", (per_page, offset))
-    students = cur.fetchall()
+    try:
+        cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    # ✅ Count total students
-    cur.execute("SELECT COUNT(*) AS total FROM students")
-    total_students = cur.fetchone()['total']
-    total_pages = (total_students + per_page - 1) // per_page  # Calculate total pages
-    cur.close()
+        # Fetch students for the current page
+        cur.execute("SELECT * FROM students LIMIT %s OFFSET %s", (per_page, offset))
+        students = cur.fetchall()
 
-    return render_template('home.html', students=students, page=page, total_pages=total_pages)
+        # Count total students
+        cur.execute("SELECT COUNT(*) AS total FROM students")
+        total_students = cur.fetchone()['total']
+        total_pages = (total_students + per_page - 1) // per_page
+
+        cur.close()
+
+        return render_template(
+            'home.html',
+            students=students,
+            page=page,
+            total_pages=total_pages
+        )
+
+    except Exception as e:
+        flash(f"An error occurred while fetching data: {e}", "danger")
+        return redirect(url_for('controller.login'))
+
 
 
 @controller.route('/addstudent', methods=['GET', 'POST'])
