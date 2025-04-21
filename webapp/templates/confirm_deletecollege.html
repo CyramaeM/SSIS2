@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Delete - College{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Confirm Deletion</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul style="list-style-type: none; padding: 0; text-align: center; color: red; font-size: 16px;">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('controller.delete_college', college_id=college_id) }}" method="POST" style="display:inline-block;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    </form>
+
+    <form action="{{ url_for('controller.cancel_delete') }}" method="POST" style="display:inline-block;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-secondary">Cancel</button>
+    </form>
+</div>
+{% endblock %}

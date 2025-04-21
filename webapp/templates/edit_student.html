@@ -7,38 +7,45 @@
     <h1>Edit Student</h1>
     <form id="editStudentForm" action="{{ url_for('controller.edit_student', student_id=student.id_number) }}" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
         <!-- ID Number -->
         <div class="form-group">
             <label for="id_number">ID Number:</label>
-            <input type="text" name="id_number" id="id_number" value="{{ student.id_number }}" class="form-control" required>
+            <input type="text" name="id_number" id="id_number" value="{{ student.id_number }}" required>
         </div>
+        
         <!-- First Name -->
         <div class="form-group">
             <label for="fname">First Name:</label>
-            <input type="text" name="fname" id="fname" value="{{ student.fname }}" class="form-control" required>
+            <input type="text" name="fname" id="fname" value="{{ student.fname }}" required>
         </div>
+        
         <!-- Last Name -->
         <div class="form-group">
             <label for="lname">Last Name:</label>
-            <input type="text" name="lname" id="lname" value="{{ student.lname }}" class="form-control" required>
+            <input type="text" name="lname" id="lname" value="{{ student.lname }}" required>
         </div>
+        
         <!-- Course -->
         <div class="form-group">
             <label for="course">Course:</label>
-            <input type="text" name="course" id="course" value="{{ student.course }}" class="form-control" required>
+            <input type="text" name="course" id="course" value="{{ student.course }}" required>
         </div>
+        
         <!-- Year Level -->
         <div class="form-group">
             <label for="yearlevel">Year Level:</label>
-            <input type="text" name="yearlevel" id="yearlevel" value="{{ student.yearlevel }}" class="form-control" required>
+            <input type="text" name="yearlevel" id="yearlevel" value="{{ student.yearlevel }}" required>
         </div>
+        
         <!-- Gender -->
         <div class="form-group">
             <label for="gender">Gender:</label>
-            <input type="text" name="gender" id="gender" value="{{ student.gender }}" class="form-control" required>
+            <input type="text" name="gender" id="gender" value="{{ student.gender }}" required>
         </div>
+        
         <!-- Submit Button -->
-        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="submit">Update</button>
     </form>
 </div>
 {% endblock %}

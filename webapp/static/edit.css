@@ -25,6 +25,7 @@ body {
 h1 {
     color: #066BA3;
     text-align: center;
+    margin-bottom: 20px;
 }
 
 .form-group {
@@ -43,7 +44,8 @@ input[type="text"], input[type="email"], input[type="password"], input[type="fil
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
 }
 
 .form-check {
@@ -69,6 +71,7 @@ button[type="submit"] {
     border-radius: 5px;
     cursor: pointer;
     width: 100%;
+    transition: background-color 0.3s;
 }
 
 button[type="submit"]:hover {
