@@ -28,7 +28,7 @@
             <td>{{ student.yearlevel }}</td>
             <td>
                 <a href="{{ url_for('controller.edit_student', student_id=student.id_number) }}" class="btn btn-success">Edit</a>
-                <form action="{{ url_for('controller.confirm_delete', student_id=student.id_number) }}" method="POST" style="display:inline-block;">
+                <form action="{{ url_for('controller.delete_student', student_id=student.id_number) }}" method="POST" style="display:inline-block;">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>                
