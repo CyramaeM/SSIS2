@@ -8,7 +8,7 @@
     <link rel="stylesheet" href='/static/form.css'>
     <link rel="stylesheet" href='/static/base.css'>
     <link rel="stylesheet" href='/static/add.css'>
-   
+    <link rel="stylesheet" href='/static/search.css'>
 </head>
 <body>
     <nav class="navbar">
@@ -18,6 +18,12 @@
                 <li><a href="{{ url_for('controller.home') }}">Student</a></li>
                 <li><a href="{{ url_for('controller.collegehome') }}">College</a></li>
                 <li><a href="{{ url_for('controller.coursehome') }}">Course</a></li>
+                <li>
+                    <form action="{{ url_for('controller.search') }}" method="GET" class="search-form">
+                        <input type="text" name="query" placeholder="Search..." required>
+                        <button type="submit">Search</button>
+                    </form>
+                </li>
             {% else %}
                 <li><a href="{{ url_for('controller.signup') }}">Sign Up</a></li>
                 <li><a href="{{ url_for('controller.login') }}">Log In</a></li>

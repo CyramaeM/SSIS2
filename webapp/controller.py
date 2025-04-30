@@ -409,3 +409,52 @@ def delete_course(coursecode):
     mysql.connection.commit()
     flash("Course deleted successfully!", "success")
     return redirect(url_for('controller.coursehome'))
+
+@controller.route('/search', methods=['GET'])
+def search():
+    query = request.args.get('query', '').strip()
+    page = request.args.get('page', 1, type=int)  # Get current page
+    per_page = 10  # Number of results per page
+    offset = (page - 1) * per_page  # Calculate offset for pagination
+
+    results = []
+    total_results = 0
+
+    try:
+        cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+        # Count total matching records for pagination
+        cur.execute("""
+            SELECT COUNT(*) AS total FROM students
+            WHERE id_number LIKE %s
+            OR fname LIKE %s
+            OR lname LIKE %s
+            OR course LIKE %s
+            OR gender = %s
+            OR yearlevel = %s
+        """, (f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%", query, query))
+        
+        total_results = cur.fetchone()["total"]
+
+        # Fetch paginated results
+        cur.execute("""
+            SELECT id_number, fname, lname, course, yearlevel, gender, profile
+            FROM students
+            WHERE id_number LIKE %s
+            OR fname LIKE %s
+            OR lname LIKE %s
+            OR course LIKE %s
+            OR gender = %s
+            OR yearlevel = %s
+            LIMIT %s OFFSET %s
+        """, (f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%", query, query, per_page, offset))
+
+        results = cur.fetchall()
+        cur.close()
+    except Exception as e:
+        print("Database Error:", e)
+        flash("An error occurred while searching. Please try again.", "danger")
+
+    total_pages = (total_results + per_page - 1) // per_page  # Calculate total pages
+
+    return render_template('search.html', results=results, query=query, page=page, total_pages=total_pages)
