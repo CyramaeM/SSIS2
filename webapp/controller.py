@@ -426,13 +426,13 @@ def search():
         # Count total matching records for pagination
         cur.execute("""
             SELECT COUNT(*) AS total FROM students
-            WHERE id_number LIKE %s
+            WHERE id_number = %s
             OR fname LIKE %s
             OR lname LIKE %s
             OR course LIKE %s
             OR gender = %s
             OR yearlevel = %s
-        """, (f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%", query, query))
+        """, (query, f"%{query}%", f"%{query}%", f"%{query}%", query, query))
         
         total_results = cur.fetchone()["total"]
 
@@ -440,14 +440,14 @@ def search():
         cur.execute("""
             SELECT id_number, fname, lname, course, yearlevel, gender, profile
             FROM students
-            WHERE id_number LIKE %s
+            WHERE id_number = %s
             OR fname LIKE %s
             OR lname LIKE %s
             OR course LIKE %s
             OR gender = %s
             OR yearlevel = %s
             LIMIT %s OFFSET %s
-        """, (f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%", query, query, per_page, offset))
+        """, (query, f"%{query}%", f"%{query}%", f"%{query}%", query, query, per_page, offset))
 
         results = cur.fetchall()
         cur.close()
