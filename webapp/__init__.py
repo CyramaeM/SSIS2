@@ -9,11 +9,10 @@ import cloudinary.api
 
 
 mysql = MySQL()
+csrf = CSRFProtect()
 
 def create_app():
     app = Flask(__name__, template_folder="templates", instance_relative_config=True)
-    
-    # MySQL Configurations
     app.config["SECRET_KEY"] = "blue"
     app.config["MYSQL_USER"] = "root"
     app.config["MYSQL_PASSWORD"] = "root"
@@ -42,7 +41,7 @@ def create_app():
         except Exception as e:
             print("❌ MySQL Connection Error:", e)
 
-    CSRFProtect(app)
+    csrf.init_app(app)
 
     from webapp.controller import controller
     app.register_blueprint(controller,url_prefix='/')

@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, session, redirect, url_fo
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mysqldb import MySQL
 import webapp as webapp
-from webapp import mysql
+from webapp import mysql,csrf
 import cloudinary
 import cloudinary.uploader
 mysql = MySQL()
@@ -11,30 +11,29 @@ mysql = MySQL()
 controller = Blueprint('controller', __name__)
 ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif']
 
-# Class error:
 class Error(Exception):
-    # Base class for other EXCEPTIONS
     pass
 class InvalidID(Error):
-    # Raise when an ID is invalid
     pass
 
 class IDExists(Error):
-    # Raise when an ID already exists
     pass
 
 @controller.route("/")
+@csrf.exempt
 def base():
     return render_template('base.html')
 
 @controller.route("/index")
+@csrf.exempt
 def index():
     return render_template("index.html")
 
 @controller.route('/signup', methods=['GET', 'POST'])
+@csrf.exempt
 def signup():
     if request.method == 'GET':
-        return render_template('signup.html')  # Ensures form loads correctly
+        return render_template('signup.html') 
 
     email = request.form.get('email')
     password = request.form.get('password')
@@ -50,27 +49,24 @@ def signup():
             cur.execute("INSERT INTO users (email, password) VALUES (%s, %s)", (email, hashed_password))
             mysql.connection.commit()
             flash("Sign Up Successful!", "success")
-            return redirect(url_for("controller.login"))  # Redirect after success
+            return redirect(url_for("controller.login"))  
     except Exception as e:
         print("Database Error:", e)
         flash("An error occurred. Please try again.", "danger")
         return redirect(url_for("controller.signup"))
 
-import MySQLdb.cursors  # Make sure this is imported
+import MySQLdb.cursors 
 
 @controller.route("/login", methods=["GET", "POST"])
+@csrf.exempt
 def login():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
-
-        # ✅ Use DictCursor to get dictionary results
         cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)  
         cur.execute("SELECT id, password FROM users WHERE email = %s", (email,))
         user = cur.fetchone()
         cur.close()
-
-        # Debugging logs
         print("Fetched user:", user)
 
         if not user:
@@ -80,7 +76,7 @@ def login():
         user_id = user["id"]
         hashed_password = user["password"]
 
-        print("Stored password hash:", hashed_password)  # Debugging output
+        print("Stored password hash:", hashed_password)
 
         if check_password_hash(hashed_password, password):  
             session["user_id"] = user_id
@@ -92,8 +88,9 @@ def login():
     return render_template("login.html")
 
 @controller.route('/logout')
+@csrf.exempt
 def logout():
-    session.pop('user_id', None)  # Remove user session
+    session.pop('user_id', None) 
     flash("You have been logged out.", "info")
     return redirect(url_for('controller.login'))
 
@@ -102,12 +99,13 @@ def logout():
 from flask import request
 
 @controller.route('/home')
+@csrf.exempt
 def home():
     if 'user_id' not in session:
         flash("You must log in first!", "danger")
         return redirect(url_for('controller.login'))
 
-    # Get current page
+ 
     page = request.args.get('page', 1, type=int)
     per_page = 10
     offset = (page - 1) * per_page
@@ -115,11 +113,11 @@ def home():
     try:
         cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-        # Fetch students for the current page
+       
         cur.execute("SELECT * FROM students LIMIT %s OFFSET %s", (per_page, offset))
         students = cur.fetchall()
 
-        # Count total students
+  
         cur.execute("SELECT COUNT(*) AS total FROM students")
         total_students = cur.fetchone()['total']
         total_pages = (total_students + per_page - 1) // per_page
@@ -140,34 +138,33 @@ def home():
 
 
 @controller.route('/addstudent', methods=['GET', 'POST'])
+@csrf.exempt
 def add_student():
     try:
         cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)  
         cur.execute("SELECT coursecode FROM course")  
-        courses = [row['coursecode'] for row in cur.fetchall()]  # Fetch course codes correctly
+        courses = [row['coursecode'] for row in cur.fetchall()]
         cur.close()
     except Exception as e:
         print("Database Error:", e)
-        courses = []  # Ensure courses is at least an empty list to avoid NameError
+        courses = [] 
 
     if request.method == 'GET':
-        return render_template('add_student.html', courses=courses)  # Ensure courses is passed
+        return render_template('add_student.html', courses=courses) 
 
-    # Handle POST request (form submission)
+ 
     stud_id = request.form.get('stud_id')
     fname = request.form.get('fname')
     lname = request.form.get('lname')
     course = request.form.get('course')
     yearlevel = request.form.get('yearlevel')
     gender = request.form.get('gender')
-    # Handle file upload
     profile_photo = request.files['profile_photo']
     
     upload_result = None
     if profile_photo:
         upload_result = cloudinary.uploader.upload(profile_photo)
 
-    # Get the secure URL of the uploaded photo
     photo_url = upload_result['secure_url'] if upload_result else 'default_profile.png'
     photo_public_id = upload_result['public_id'] if upload_result else None
 
@@ -189,6 +186,7 @@ def add_student():
 
 
 @controller.route('/editstudent/<string:student_id>', methods=['GET', 'POST'])
+@csrf.exempt
 def edit_student(student_id):
     with mysql.connection.cursor() as cur:
         if request.method == 'POST':
@@ -217,20 +215,21 @@ def edit_student(student_id):
 
 
 @controller.route('/delete_student/<string:student_id>', methods=['POST'])
+@csrf.exempt
 def delete_student(student_id):
     try:
         cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        # Fetch the public ID of the photo to delete
+
         cur.execute("SELECT profile_id FROM students WHERE id_number = %s", (student_id,))
         student = cur.fetchone()
         profile_public_id = student.get('profile_id') if student else None
 
-        # Delete the student from the database
+    
         cur.execute("DELETE FROM students WHERE id_number = %s", (student_id,))
         mysql.connection.commit()
         cur.close()
 
-        # Delete the photo from Cloudinary
+ 
         if profile_public_id:
             cloudinary.uploader.destroy(profile_public_id)
 
@@ -242,6 +241,7 @@ def delete_student(student_id):
     return redirect(url_for("controller.home"))
 
 @controller.route('/collegeh')
+@csrf.exempt
 def collegehome():
     if 'user_id' not in session:
         flash("You must log in first!", "danger")
@@ -255,6 +255,7 @@ def collegehome():
     return render_template('college.html', colleges=colleges)
 
 @controller.route('/addcollege', methods=['GET', 'POST'])
+@csrf.exempt
 def add_college():
     if 'user_id' not in session:
         flash("You must log in first!", "danger")
@@ -275,6 +276,7 @@ def add_college():
 
 
 @controller.route('/editcollege/<string:collegecode>', methods=['GET', 'POST'])
+@csrf.exempt
 def edit_college(collegecode):
     with mysql.connection.cursor() as cur:
         if request.method == 'POST':
@@ -282,31 +284,32 @@ def edit_college(collegecode):
             college_code = request.form.get('college_code')
             college_name = request.form.get('college_name')
 
-            # Update the college information in the database
+    
             cur.execute("""
                 UPDATE college
                 SET collegecode = %s, collegename = %s
                 WHERE collegecode = %s
-            """, (college_code, college_name, collegecode))  # Corrected parameter list
+            """, (college_code, college_name, collegecode))
 
             mysql.connection.commit()
             flash("College updated successfully!", "success")
-            return redirect(url_for('controller.collegehome'))  # Redirect to a college-specific page
+            return redirect(url_for('controller.collegehome'))
         
         else:
-            # Fetch college details for the GET request
+
             cur.execute("SELECT * FROM college WHERE collegecode = %s", (collegecode,))
-            college = cur.fetchone()  # Retrieve the college data
+            college = cur.fetchone()
 
             if not college:
                 flash("College not found!", "danger")
-                return redirect(url_for('controller.collegehome'))  # Redirect to home if not found
+                return redirect(url_for('controller.collegehome')) 
 
-            return render_template('edit_college.html', college=college)  # Render the edit template
+            return render_template('edit_college.html', college=college) 
 
 
 
 @controller.route('/deletecollege/<string:college_id>', methods=['POST'])
+@csrf.exempt
 def delete_college(college_id):
     if 'user_id' not in session:
         flash("You must log in first!", "danger")
@@ -319,6 +322,7 @@ def delete_college(college_id):
     return redirect(url_for('controller.collegehome'))
 
 @controller.route('/coursehome')
+@csrf.exempt
 def coursehome():
     if 'user_id' not in session:
         flash("You must log in first!", "danger")
@@ -346,14 +350,15 @@ def coursehome():
 
 
 @controller.route('/addcourse', methods=['GET', 'POST'])
+@csrf.exempt
 def add_course():
     with mysql.connection.cursor() as cur:
         if request.method == 'POST':
             course_code = request.form['coursecode']
             course_name = request.form['coursename']
-            college_belong = request.form['college']  # The selected college
+            college_belong = request.form['college']
             
-            # Save to the database
+          
             cur.execute("""
                 INSERT INTO course (coursecode, coursename, collegebelong)
                 VALUES (%s, %s, %s)
@@ -363,14 +368,15 @@ def add_course():
             return redirect(url_for('controller.coursehome'))
 
         else:
-            # Fetch colleges from the database
+        
             cur.execute("SELECT collegecode, collegename FROM college")
-            colleges = cur.fetchall()  # List of colleges
+            colleges = cur.fetchall()  
             return render_template('add_course.html', colleges=colleges)
 
 
 
 @controller.route('/editcourse/<string:coursecode>', methods=['GET', 'POST'])
+@csrf.exempt
 def edit_course(coursecode):
     with mysql.connection.cursor() as cur:
         if request.method == 'POST':
@@ -381,7 +387,7 @@ def edit_course(coursecode):
                 UPDATE course
                 SET coursecode = %s, coursename = %s
                 WHERE coursecode = %s
-            """, (course_code, course_name, coursecode))  # Corrected parameter list
+            """, (course_code, course_name, coursecode)) 
 
             mysql.connection.commit()
             flash("Course updated successfully!", "success")
@@ -389,16 +395,17 @@ def edit_course(coursecode):
         
         else:
             cur.execute("SELECT * FROM course WHERE coursecode = %s", (coursecode,))
-            course = cur.fetchone()  # Fixed variable name
+            course = cur.fetchone() 
 
             if not course:
                 flash("Course not found!", "danger")
                 return redirect(url_for('controller.coursehome'))
 
-            return render_template('edit_course.html', course=course)  # Pass course to template
+            return render_template('edit_course.html', course=course)  
 
     
 @controller.route('/deletecourse/<string:coursecode>', methods=['POST'])
+@csrf.exempt
 def delete_course(coursecode):
     if 'user_id' not in session:
         flash("You must log in first!", "danger")
@@ -411,11 +418,12 @@ def delete_course(coursecode):
     return redirect(url_for('controller.coursehome'))
 
 @controller.route('/search', methods=['GET'])
+@csrf.exempt
 def search():
     query = request.args.get('query', '').strip()
-    page = request.args.get('page', 1, type=int)  # Get current page
-    per_page = 10  # Number of results per page
-    offset = (page - 1) * per_page  # Calculate offset for pagination
+    page = request.args.get('page', 1, type=int) 
+    per_page = 10 
+    offset = (page - 1) * per_page  
 
     results = []
     total_results = 0
@@ -423,7 +431,7 @@ def search():
     try:
         cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-        # Count total matching records for pagination
+
         cur.execute("""
             SELECT COUNT(*) AS total FROM students
             WHERE id_number = %s
@@ -435,8 +443,6 @@ def search():
         """, (query, f"%{query}%", f"%{query}%", f"%{query}%", query, query))
         
         total_results = cur.fetchone()["total"]
-
-        # Fetch paginated results
         cur.execute("""
             SELECT id_number, fname, lname, course, yearlevel, gender, profile
             FROM students
@@ -455,6 +461,6 @@ def search():
         print("Database Error:", e)
         flash("An error occurred while searching. Please try again.", "danger")
 
-    total_pages = (total_results + per_page - 1) // per_page  # Calculate total pages
+    total_pages = (total_results + per_page - 1) // per_page 
 
     return render_template('search.html', results=results, query=query, page=page, total_pages=total_pages)
